@@ -18,6 +18,10 @@ function resolve (dir) {
 }
 
 var env = config.build.env
+var server_conf_vars = {}
+for (let [k, v] of Object.entries(server_conf.publicValues)) {
+  server_conf_vars['process.env.' + k] = v
+}
 
 var webpackConfig = merge(baseWebpackConfig, {
   module: {
@@ -34,12 +38,11 @@ var webpackConfig = merge(baseWebpackConfig, {
   },
   plugins: [
     // http://vuejs.github.io/vue-loader/en/workflow/production.html
-    new webpack.EnvironmentPlugin(server_conf.publicValues),
-    new webpack.DefinePlugin({
+    new webpack.DefinePlugin(Object.assign({
       NODE_ENV: env.NODE_ENV,
       GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
       GITHUB_CLIENT_ID: env.GITHUB_CLIENT_ID
-    }),
+    }, server_conf_vars)),
     new webpack.optimize.UglifyJsPlugin({
       compress: {
         warnings: false
