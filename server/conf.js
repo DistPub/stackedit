@@ -31,6 +31,7 @@ exports.publicValues = {
   dropboxAppKey,
   dropboxAppKeyFull,
   githubClientId,
+  githubClientSecret,
   googleClientId,
   googleApiKey,
   wordpressClientId,

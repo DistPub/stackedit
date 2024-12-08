@@ -1,6 +1,7 @@
 var path = require('path')
 var config = require('../config')
-var ExtractTextPlugin = require('extract-text-webpack-plugin')
+var MiniCssExtractPlugin = require('mini-css-extract-plugin')
+var serverConf = require('../server/conf')
 
 exports.assetsPath = function (_path) {
   var assetsSubDirectory = process.env.NODE_ENV === 'production'
@@ -35,12 +36,17 @@ exports.cssLoaders = function (options) {
     // Extract CSS when that option is specified
     // (which is the case during production build)
     if (options.extract) {
-      return ExtractTextPlugin.extract({
-        use: loaders,
-        fallback: 'vue-style-loader'
-      })
+      return [
+        {
+          loader: MiniCssExtractPlugin.loader,
+        }
+      ].concat(loaders)
     } else {
-      return ['vue-style-loader'].concat(loaders)
+      return [
+        {
+          loader: 'vue-style-loader'
+        }
+      ].concat(loaders)
     }
   }
 
@@ -68,4 +74,17 @@ exports.styleLoaders = function (options) {
     })
   }
   return output
+}
+
+exports.getServerPublicVars = function () {
+  var vars = {}
+  function camelToSnake(str) {
+    return str
+      .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+      .toUpperCase();
+  }
+  for (let [k, v] of Object.entries(serverConf.publicValues)) {
+    vars['process.env.' + camelToSnake(k)] = JSON.stringify(v)
+  }
+  return vars
 }

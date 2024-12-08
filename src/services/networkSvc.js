@@ -1,6 +1,7 @@
 import utils from './utils';
 import store from '../store';
 import constants from '../data/constants';
+const conf = require('../../server/conf');
 
 const scriptLoadingPromises = Object.create(null);
 const authorizeTimeout = 6 * 60 * 1000; // 2 minutes
@@ -63,26 +64,11 @@ export default {
         && this.isUserActive()
       ) {
         store.commit('updateLastOfflineCheck');
-        const script = document.createElement('script');
-        let timeout;
         try {
-          await new Promise((resolve, reject) => {
-            script.onload = resolve;
-            script.onerror = reject;
-            script.src = `https://apis.google.com/js/api.js?${Date.now()}`;
-            try {
-              document.head.appendChild(script); // This can fail with bad network
-              timeout = setTimeout(reject, networkTimeout);
-            } catch (e) {
-              reject(e);
-            }
-          });
+          await fetch('https://network.hukoubook.com/xrpc/_health')
           isConnectionDown = false;
         } catch (e) {
           isConnectionDown = true;
-        } finally {
-          clearTimeout(timeout);
-          document.head.removeChild(script);
         }
       }
       const offline = isBrowserOffline || isConnectionDown;
@@ -110,8 +96,7 @@ export default {
     if (!store.state.offline && !isConfLoading && !isConfLoaded) {
       try {
         isConfLoading = true;
-        const res = await this.request({ url: 'conf' });
-        await store.dispatch('data/setServerConf', res.body);
+        await store.dispatch('data/setServerConf', conf.publicValues);
         isConfLoaded = true;
       } finally {
         isConfLoading = false;
@@ -143,6 +128,37 @@ export default {
       });
     }
     return scriptLoadingPromises[url];
+  },
+  async xrpc(instance, xrpc_method, {params = {}, data = null, jwt = null}) {
+      let api = new URL(`https://${instance}/xrpc/${xrpc_method}`)
+      let searchParams = new URLSearchParams()
+      for (const [key, value] of Object.entries(params)) {
+          searchParams.set(key, value)
+      }
+      api.search = searchParams.toString()
+
+      let method = 'GET'
+      let headers = {}
+      let body = null
+
+      if (jwt !== null) {
+          headers['Authorization'] = `Bearer ${jwt}`
+      }
+
+      if (data) {
+          method = 'POST'
+          if (data instanceof File) {
+              headers['Content-Type'] = await utils.detect_file_type(data)
+              body = data
+          } else {
+              headers['Content-Type'] = 'application/json'
+              body = JSON.stringify(data)
+          }
+      }
+      let response = await fetch(api.toString(), {headers, method, body})
+      let content_type = response.headers.get('content-type')
+      if (content_type.startsWith('application/json')) return await response.json()
+      return await response.text()
   },
   async startOauth2(url, params = {}, silent = false, reattempt = false) {
     try {

@@ -1,6 +1,14 @@
 {
-  "processors": ["stylelint-processor-html"],
-  "extends": "stylelint-config-standard",
+  "overrides": [
+    {
+      "files": ["**/*.vue"],
+      "customSyntax": "postcss-html"
+    },
+    {
+      "files": ["**/*.scss"],
+      "customSyntax": "postcss-scss"
+    }
+  ],
   "rules": {
     "no-empty-source": null
   }

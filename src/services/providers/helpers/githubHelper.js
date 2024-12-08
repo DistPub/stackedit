@@ -64,6 +64,7 @@ export default {
    */
   async startOauth2(scopes, sub = null, silent = false) {
     const clientId = store.getters['data/serverConf'].githubClientId;
+    const clientSecret = store.getters['data/serverConf'].githubClientSecret;
 
     // Get an OAuth2 code
     const { code } = await networkSvc.startOauth2(
@@ -76,14 +77,21 @@ export default {
     );
 
     // Exchange code with token
-    const accessToken = (await networkSvc.request({
-      method: 'GET',
-      url: 'oauth2/githubToken',
-      params: {
-        clientId,
-        code,
-      },
-    })).body;
+    let uri = new URL('https://go.smitechow.com/+x/github.com/login/oauth/access_token')
+    let params = new URLSearchParams()
+    params.set('client_id', clientId)
+    params.set('client_secret', clientSecret)
+    params.set('code', code)
+    uri.search = params.toString()
+
+    let response = await fetch(uri.toString(), {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json'
+      }
+    })
+    let result = await response.json()
+    const accessToken = result.access_token;
 
     // Call the user info endpoint
     const user = (await networkSvc.request({

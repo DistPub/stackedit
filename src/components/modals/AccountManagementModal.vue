@@ -41,6 +41,10 @@
         <icon-provider slot="icon" provider-id="blogger"></icon-provider>
         <span>Add Blogger account</span>
       </menu-entry>
+      <menu-entry @click.native="addBlueskyAccount">
+        <icon-provider slot="icon" provider-id="bluesky"></icon-provider>
+        <span>Add Bluesky account</span>
+      </menu-entry>
       <menu-entry @click.native="addDropboxAccount">
         <icon-provider slot="icon" provider-id="dropbox"></icon-provider>
         <span>Add Dropbox account</span>
@@ -86,6 +90,7 @@ import googleHelper from '../../services/providers/helpers/googleHelper';
 import dropboxHelper from '../../services/providers/helpers/dropboxHelper';
 import githubHelper from '../../services/providers/helpers/githubHelper';
 import gitlabHelper from '../../services/providers/helpers/gitlabHelper';
+import blueskyHelper from '../../services/providers/helpers/blueskyHelper';
 import wordpressHelper from '../../services/providers/helpers/wordpressHelper';
 import zendeskHelper from '../../services/providers/helpers/zendeskHelper';
 import badgeSvc from '../../services/badgeSvc';
@@ -136,6 +141,14 @@ export default {
           name: token.name,
           scopes: ['api'],
         })),
+        ...Object.values(store.getters['data/blueskyTokensBySub']).map(token => ({
+          token,
+          providerId: 'bluesky',
+          url: token.instance,
+          userId: token.sub,
+          name: token.handle,
+          scopes: ['api'],
+        })),
         ...Object.values(store.getters['data/wordpressTokensBySub']).map(token => ({
           token,
           providerId: 'wordpress',
@@ -166,6 +179,12 @@ export default {
     async addBloggerAccount() {
       try {
         await googleHelper.addBloggerAccount();
+      } catch (e) { /* cancel */ }
+    },
+    async addBlueskyAccount() {
+      try {
+        const {instance, handle, password} = await store.dispatch('modal/open', { type: 'blueskyAccount' });
+        await blueskyHelper.addAccount(instance, handle, password);
       } catch (e) { /* cancel */ }
     },
     async addDropboxAccount() {

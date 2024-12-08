@@ -1,22 +1,30 @@
-// http://eslint.org/docs/user-guide/configuring
-
+const eslintJS = require("@eslint/js")
+const eslintImport = require("eslint-plugin-import")
+const vueParser = require("vue-eslint-parser")
+const babelParser = require("@babel/eslint-parser")
+const globals = require("globals")
 module.exports = {
-  root: true,
-  parser: 'babel-eslint',
-  parserOptions: {
-    sourceType: 'module'
-  },
-  env: {
-    browser: true,
-  },
-  extends: 'airbnb-base',
-  // required to lint *.vue files
-  plugins: [
-    'html'
+  files: ["**/*.{js,vue}"],
+  ignores: [
+    'build/*.js',
+    'config/*.js',
+    'src/libs/*.js',
   ],
-  globals: {
-    "NODE_ENV": false,
-    "VERSION": false
+  languageOptions: {
+    "parser": vueParser,
+    "parserOptions": {
+        "parser": babelParser,
+        "sourceType": "module"
+    },
+    globals: {
+      ...globals.node,
+      ...globals.browser,
+      "NODE_ENV": false,
+      "VERSION": false
+    }
+  },
+  plugins: {
+    import: eslintImport,
   },
   // check if imports actually resolve
   'settings': {
@@ -26,8 +34,11 @@ module.exports = {
       }
     }
   },
-  // add your custom rules here
+  linterOptions: {
+    "reportUnusedDisableDirectives": 'off',
+  },
   'rules': {
+    ...eslintJS.configs.recommended.rules,
     'no-param-reassign': [2, { 'props': false }],
     // don't require .vue extension when importing
     'import/extensions': ['error', 'always', {
@@ -35,10 +46,10 @@ module.exports = {
       'vue': 'never'
     }],
     // allow optionalDependencies
-    'import/no-extraneous-dependencies': ['error', {
-      'optionalDependencies': ['test/unit/index.js']
-    }],
+    'import/no-extraneous-dependencies': 0,
     // allow debugger during development
-    'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0
+    'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0,
+    'no-unused-vars': 0,
+    'no-redeclare': 0,
   }
 }

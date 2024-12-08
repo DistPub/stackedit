@@ -56,7 +56,10 @@ import GithubWorkspaceModal from './modals/providers/GithubWorkspaceModal';
 import GithubPublishModal from './modals/providers/GithubPublishModal';
 import GistSyncModal from './modals/providers/GistSyncModal';
 import GistPublishModal from './modals/providers/GistPublishModal';
+import BlueskyPublishModal from './modals/providers/BlueskyPublishModal';
 import GitlabAccountModal from './modals/providers/GitlabAccountModal';
+import BlueskyAccountModal from './modals/providers/BlueskyAccountModal';
+import BlueskyConfigEBTPGateModal from './modals/providers/BlueskyConfigEBTPGateModal';
 import GitlabOpenModal from './modals/providers/GitlabOpenModal';
 import GitlabPublishModal from './modals/providers/GitlabPublishModal';
 import GitlabSaveModal from './modals/providers/GitlabSaveModal';
@@ -107,7 +110,10 @@ export default {
     GithubPublishModal,
     GistSyncModal,
     GistPublishModal,
+    BlueskyPublishModal,
+    BlueskyConfigEBTPGateModal,
     GitlabAccountModal,
+    BlueskyAccountModal,
     GitlabOpenModal,
     GitlabPublishModal,
     GitlabSaveModal,

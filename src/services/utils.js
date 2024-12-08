@@ -2,6 +2,8 @@ import yaml from 'js-yaml';
 import '../libs/clunderscore';
 import presets from '../data/presets';
 import constants from '../data/constants';
+import { Magika } from "magika";
+const content_types = require('../data/content_types_kb.min.json');
 
 // For utils.uid()
 const uidLength = 16;
@@ -75,7 +77,20 @@ Object.keys(presets).forEach((key) => {
   computedPresets[key] = preset;
 });
 
+const magika = new Magika()
+await magika.load({
+  modelURL: "/static/magika/model/model.json",
+  configURL: "/static/magika/model/config.json",
+});
+
+async function detect_file_type(file) {
+  if (file.type) return file.type
+  const prediction = await magika.identifyBytesFull(new Uint8Array(await file.arrayBuffer()))
+  return content_types[prediction.label].mime_type
+}
+
 export default {
+  detect_file_type,
   computedPresets,
   queryParams: parseQueryParams(window.location.hash.slice(1)),
   setQueryParams(params = {}) {
@@ -357,5 +372,11 @@ export default {
       }
       elt.parentNode.removeChild(elt);
     });
+  },
+  convertStringToTemplate(templateString, context) {
+    // Create a function that evaluates the template string
+    const func = new Function("context", `with (context) { return \`${templateString}\`; }`);
+    // Execute the function with the provided context
+    return func(context);
   },
 };

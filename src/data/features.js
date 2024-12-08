@@ -220,6 +220,11 @@ export default [
         'Link your GitLab account to StackEdit.',
       ),
       new Feature(
+        'addBlueskyAccount',
+        'Bluesky user',
+        'Link your Bluesky account to StackEdit.',
+      ),
+      new Feature(
         'addGoogleDriveAccount',
         'Google Drive user',
         'Link your Google Drive account to StackEdit.',
@@ -342,6 +347,16 @@ export default [
         'publishToGist',
         'Gist publisher',
         'Use the "Publish" menu to publish a file to a Gist.',
+      ),
+      new Feature(
+        'publishToBluesky',
+        'Bluesky publisher',
+        'Use the "Publish" menu to publish a file to a Bluesky Post.',
+      ),
+      new Feature(
+        'configEBTPGate',
+        'Custom EBTP Gate',
+        'Use the "Custom EBTP Gate" menu to custom EBTP gate on atproto.',
       ),
       new Feature(
         'publishToGitlab',

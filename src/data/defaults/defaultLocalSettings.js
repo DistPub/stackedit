@@ -19,6 +19,7 @@ export default () => ({
   githubPublishTemplate: 'jekyllSite',
   gistIsPublic: false,
   gistPublishTemplate: 'plainText',
+  blueskyPublishTemplate: 'plainHtml',
   gitlabServerUrl: '',
   gitlabApplicationId: '',
   gitlabProjectUrl: '',

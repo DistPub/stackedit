@@ -59,6 +59,20 @@
           <span>{{token.name}}</span>
         </menu-entry>
       </div>
+      <div v-for="token in blueskyTokens" :key="token.sub">
+        <menu-entry @click.native="publishBluesky(token)">
+          <icon-provider slot="icon" provider-id="bluesky"></icon-provider>
+          <div>Publish to Bluesky</div>
+          <span>{{token.handle}}</span>
+        </menu-entry>
+      </div>
+      <div v-for="token in blueskyTokens" :key="token.sub">
+        <menu-entry @click.native="configEBTPGate(token)">
+          <icon-provider slot="icon" provider-id="bluesky"></icon-provider>
+          <div>Custom EBTP Gate</div>
+          <span>{{token.handle}}</span>
+        </menu-entry>
+      </div>
       <div v-for="token in googleDriveTokens" :key="token.sub">
         <menu-entry @click.native="publishGoogleDrive(token)">
           <icon-provider slot="icon" provider-id="googleDrive"></icon-provider>
@@ -84,6 +98,10 @@
       <menu-entry @click.native="addBloggerAccount">
         <icon-provider slot="icon" provider-id="blogger"></icon-provider>
         <span>Add Blogger account</span>
+      </menu-entry>
+      <menu-entry @click.native="addBlueskyAccount">
+        <icon-provider slot="icon" provider-id="bluesky"></icon-provider>
+        <span>Add Bluesky account</span>
       </menu-entry>
       <menu-entry @click.native="addDropboxAccount">
         <icon-provider slot="icon" provider-id="dropbox"></icon-provider>
@@ -120,6 +138,7 @@ import googleHelper from '../../services/providers/helpers/googleHelper';
 import dropboxHelper from '../../services/providers/helpers/dropboxHelper';
 import githubHelper from '../../services/providers/helpers/githubHelper';
 import gitlabHelper from '../../services/providers/helpers/gitlabHelper';
+import blueskyHelper from '../../services/providers/helpers/blueskyHelper';
 import wordpressHelper from '../../services/providers/helpers/wordpressHelper';
 import zendeskHelper from '../../services/providers/helpers/zendeskHelper';
 import publishSvc from '../../services/publishSvc';
@@ -171,6 +190,9 @@ export default {
     gitlabTokens() {
       return tokensToArray(store.getters['data/gitlabTokensBySub']);
     },
+    blueskyTokens() {
+      return tokensToArray(store.getters['data/blueskyTokensBySub']);
+    },
     googleDriveTokens() {
       return tokensToArray(store.getters['data/googleTokensBySub'], token => token.isDrive);
     },
@@ -185,6 +207,7 @@ export default {
         && !this.dropboxTokens.length
         && !this.githubTokens.length
         && !this.gitlabTokens.length
+        && !this.blueskyTokens.length
         && !this.googleDriveTokens.length
         && !this.wordpressTokens.length
         && !this.zendeskTokens.length;
@@ -204,6 +227,12 @@ export default {
     async addBloggerAccount() {
       try {
         await googleHelper.addBloggerAccount();
+      } catch (e) { /* cancel */ }
+    },
+    async addBlueskyAccount() {
+      try {
+        const {instance, handle, password} = await store.dispatch('modal/open', { type: 'blueskyAccount' });
+        await blueskyHelper.addAccount(instance, handle, password);
       } catch (e) { /* cancel */ }
     },
     async addDropboxAccount() {
@@ -246,6 +275,12 @@ export default {
     publishDropbox: publishModalOpener('dropboxPublish', 'publishToDropbox'),
     publishGithub: publishModalOpener('githubPublish', 'publishToGithub'),
     publishGist: publishModalOpener('gistPublish', 'publishToGist'),
+    publishBluesky: publishModalOpener('blueskyPublish', 'publishToBluesky'),
+    async configEBTPGate(token) {
+      try {
+        await store.dispatch('modal/open', { type: 'blueskyConfigEBTPGate', token });
+      } catch (e) { /* cancel */ }
+    },
     publishGitlab: publishModalOpener('gitlabPublish', 'publishToGitlab'),
     publishGoogleDrive: publishModalOpener('googleDrivePublish', 'publishToGoogleDrive'),
     publishWordpress: publishModalOpener('wordpressPublish', 'publishToWordPress'),
