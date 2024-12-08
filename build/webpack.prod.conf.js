@@ -11,12 +11,19 @@ var OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
 var OfflinePlugin = require('offline-plugin');
 var WebpackPwaManifest = require('webpack-pwa-manifest')
 var FaviconsWebpackPlugin = require('favicons-webpack-plugin')
+var server_conf = require('../server/conf');
 
 function resolve (dir) {
   return path.join(__dirname, '..', dir)
 }
 
 var env = config.build.env
+
+var env_vars = Object.assign({
+  NODE_ENV: env.NODE_ENV,
+  GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
+  GITHUB_CLIENT_ID: env.GITHUB_CLIENT_ID
+}, server_conf.publicValues)
 
 var webpackConfig = merge(baseWebpackConfig, {
   module: {
@@ -33,11 +40,7 @@ var webpackConfig = merge(baseWebpackConfig, {
   },
   plugins: [
     // http://vuejs.github.io/vue-loader/en/workflow/production.html
-    new webpack.DefinePlugin({
-      NODE_ENV: env.NODE_ENV,
-      GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
-      GITHUB_CLIENT_ID: env.GITHUB_CLIENT_ID
-    }),
+    new webpack.DefinePlugin(env_vars),
     new webpack.optimize.UglifyJsPlugin({
       compress: {
         warnings: false
