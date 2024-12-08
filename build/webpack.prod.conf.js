@@ -19,12 +19,6 @@ function resolve (dir) {
 
 var env = config.build.env
 
-var env_vars = Object.assign({
-  NODE_ENV: env.NODE_ENV,
-  GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
-  GITHUB_CLIENT_ID: env.GITHUB_CLIENT_ID
-}, server_conf.publicValues)
-
 var webpackConfig = merge(baseWebpackConfig, {
   module: {
     rules: utils.styleLoaders({
@@ -40,7 +34,12 @@ var webpackConfig = merge(baseWebpackConfig, {
   },
   plugins: [
     // http://vuejs.github.io/vue-loader/en/workflow/production.html
-    new webpack.EnvironmentPlugin(env_vars),
+    new webpack.EnvironmentPlugin(server_conf.publicValues),
+    new webpack.DefinePlugin({
+      NODE_ENV: env.NODE_ENV,
+      GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
+      GITHUB_CLIENT_ID: env.GITHUB_CLIENT_ID
+    }),
     new webpack.optimize.UglifyJsPlugin({
       compress: {
         warnings: false
