@@ -20,7 +20,7 @@ function resolve (dir) {
 var env = config.build.env
 var server_conf_vars = {}
 for (let [k, v] of Object.entries(server_conf.publicValues)) {
-  server_conf_vars['process.env.' + k] = v
+  server_conf_vars['process.env.' + k] = JSON.stringify(v)
 }
 
 var webpackConfig = merge(baseWebpackConfig, {
