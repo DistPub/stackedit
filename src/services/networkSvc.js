@@ -1,6 +1,7 @@
 import utils from './utils';
 import store from '../store';
 import constants from '../data/constants';
+const conf = require('../../server/conf');
 
 const scriptLoadingPromises = Object.create(null);
 const authorizeTimeout = 6 * 60 * 1000; // 2 minutes
@@ -110,8 +111,7 @@ export default {
     if (!store.state.offline && !isConfLoading && !isConfLoaded) {
       try {
         isConfLoading = true;
-        const res = await this.request({ url: 'conf' });
-        await store.dispatch('data/setServerConf', res.body);
+        await store.dispatch('data/setServerConf', conf.publicValues);
         isConfLoaded = true;
       } finally {
         isConfLoading = false;
