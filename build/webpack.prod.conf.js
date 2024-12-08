@@ -19,8 +19,13 @@ function resolve (dir) {
 
 var env = config.build.env
 var server_conf_vars = {}
+function camelToSnake(str) {
+  return str
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .toUpperCase();
+}
 for (let [k, v] of Object.entries(server_conf.publicValues)) {
-  server_conf_vars['process.env.' + k] = JSON.stringify(v)
+  server_conf_vars['process.env.' + camelToSnake(k)] = JSON.stringify(v)
 }
 
 var webpackConfig = merge(baseWebpackConfig, {
