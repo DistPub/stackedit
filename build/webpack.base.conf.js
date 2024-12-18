@@ -1,34 +1,33 @@
-var path = require('path')
-var webpack = require('webpack')
-var utils = require('./utils')
-var config = require('../config')
-var VueLoaderPlugin = require('vue-loader/lib/plugin')
-var vueLoaderConfig = require('./vue-loader.conf')
-var StylelintPlugin = require('stylelint-webpack-plugin')
+const path = require('path');
+const webpack = require('webpack');
+const { VueLoaderPlugin } = require('vue-loader');
+const StylelintPlugin = require('stylelint-webpack-plugin');
+const config = require('../config');
+const packageJson = require('../package.json');
 
-function resolve (dir) {
-  return path.join(__dirname, '..', dir)
-}
+const resolve = (dir) => path.join(__dirname, '..', dir);
 
 module.exports = {
+  target: ['web', 'es2020'],
   entry: {
     app: './src/'
-  },
-  node: {
-    // For mermaid
-    fs: 'empty' // jison generated code requires 'fs'
   },
   output: {
     path: config.build.assetsRoot,
     filename: '[name].js',
     publicPath: process.env.NODE_ENV === 'production'
       ? config.build.assetsPublicPath
-      : config.dev.assetsPublicPath
+      : config.dev.assetsPublicPath,
+    clean: true
   },
   resolve: {
     extensions: ['.js', '.vue', '.json'],
     alias: {
       '@': resolve('src')
+    },
+    fallback: {
+      fs: false,
+      path: false
     }
   },
   module: {
@@ -44,10 +43,8 @@ module.exports = {
       },
       {
         test: /\.vue$/,
-        loader: 'vue-loader',
-        options: vueLoaderConfig
+        loader: 'vue-loader'
       },
-      // We can't pass graphlibrary to babel
       {
         test: /\.js$/,
         loader: 'string-replace-loader',
@@ -74,26 +71,30 @@ module.exports = {
           resolve('node_modules/mermaid/src/diagrams/gantt/parser'),
           resolve('node_modules/mermaid/src/diagrams/git/parser'),
           resolve('node_modules/mermaid/src/diagrams/sequence/parser')
-        ],
+        ]
       },
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
-        loader: 'url-loader',
-        options: {
-          limit: 10000,
-          name: utils.assetsPath('img/[name].[hash:7].[ext]')
+        type: 'asset',
+        parser: {
+          dataUrlCondition: {
+            maxSize: 10 * 1024 // 10kb
+          }
+        },
+        generator: {
+          filename: 'img/[name].[hash:7][ext]'
         }
       },
       {
         test: /\.(ttf|eot|otf|woff2?)(\?.*)?$/,
-        loader: 'file-loader',
-        options: {
-          name: utils.assetsPath('fonts/[name].[hash:7].[ext]')
+        type: 'asset/resource',
+        generator: {
+          filename: 'fonts/[name].[hash:7][ext]'
         }
       },
       {
         test: /\.(md|yml|html)$/,
-        loader: 'raw-loader'
+        type: 'asset/source'
       }
     ]
   },
@@ -103,7 +104,7 @@ module.exports = {
       files: ['**/*.vue', '**/*.scss']
     }),
     new webpack.DefinePlugin({
-      VERSION: JSON.stringify(require('../package.json').version)
+      VERSION: JSON.stringify(packageJson.version)
     })
   ]
 }

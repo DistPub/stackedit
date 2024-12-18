@@ -1,35 +1,76 @@
-var utils = require('./utils')
-var webpack = require('webpack')
-var config = require('../config')
-var merge = require('webpack-merge')
-var baseWebpackConfig = require('./webpack.base.conf')
-var HtmlWebpackPlugin = require('html-webpack-plugin')
-var FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
-
-// add hot-reload related code to entry chunks
-Object.keys(baseWebpackConfig.entry).forEach(function (name) {
-  baseWebpackConfig.entry[name] = ['./build/dev-client'].concat(baseWebpackConfig.entry[name])
-})
+const { merge } = require('webpack-merge');
+const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const baseWebpackConfig = require('./webpack.base.conf');
+const config = require('../config');
+const env = require('../config/dev.env');
 
 module.exports = merge(baseWebpackConfig, {
-  module: {
-    rules: utils.styleLoaders({ sourceMap: config.dev.cssSourceMap })
+  mode: 'development',
+  devtool: 'eval-cheap-module-source-map',
+  output: {
+    publicPath: config.dev.assetsPublicPath
   },
-  // cheap-module-eval-source-map is faster for development
-  devtool: 'source-map',
+  stats: {
+    colors: true,
+    modules: false,
+    children: false,
+    chunks: false,
+    chunkModules: false
+  },
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: ['vue-style-loader', 'css-loader']
+      },
+      {
+        test: /\.scss$/,
+        use: [
+          'vue-style-loader',
+          'css-loader',
+          'postcss-loader',
+          'sass-loader'
+        ]
+      }
+    ]
+  },
   plugins: [
     new webpack.DefinePlugin({
-      NODE_ENV: config.dev.env.NODE_ENV
+      'process.env': env,
+      NODE_ENV: '"development"',
+      GOOGLE_CLIENT_ID: JSON.stringify(process.env.GOOGLE_CLIENT_ID || ''),
+      GITHUB_CLIENT_ID: JSON.stringify(process.env.GITHUB_CLIENT_ID || '')
     }),
-    // https://github.com/glenjamin/webpack-hot-middleware#installation--usage
-    new webpack.HotModuleReplacementPlugin(),
-    new webpack.NoEmitOnErrorsPlugin(),
-    // https://github.com/ampedandwired/html-webpack-plugin
     new HtmlWebpackPlugin({
       filename: 'index.html',
       template: 'index.html',
       inject: true
-    }),
-    new FriendlyErrorsPlugin()
-  ]
-})
+    })
+  ],
+  devServer: {
+    hot: true,
+    host: process.env.HOST || 'localhost',
+    port: process.env.PORT || 8080,
+    open: true,
+    historyApiFallback: true,
+    client: {
+      overlay: true,
+      progress: true
+    },
+    static: {
+      directory: config.dev.assetsPublicPath,
+      publicPath: [config.dev.assetsPublicPath]
+    },
+    proxy: config.dev.proxyTable || {},
+    setupMiddlewares: (middlewares, devServer) => {
+      if (!devServer) {
+        throw new Error('webpack-dev-server is not defined');
+      }
+      
+      // 这里可以添加自定义中间件
+      
+      return middlewares;
+    }
+  }
+});

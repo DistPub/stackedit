@@ -1,73 +1,77 @@
-var path = require('path')
-var utils = require('./utils')
-var webpack = require('webpack')
-var config = require('../config')
-var merge = require('webpack-merge')
-var baseWebpackConfig = require('./webpack.base.conf')
-var CopyWebpackPlugin = require('copy-webpack-plugin')
-var HtmlWebpackPlugin = require('html-webpack-plugin')
-var ExtractTextPlugin = require('extract-text-webpack-plugin')
-var OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
-var OfflinePlugin = require('offline-plugin');
-var WebpackPwaManifest = require('webpack-pwa-manifest')
-var FaviconsWebpackPlugin = require('favicons-webpack-plugin')
-var server_conf = require('../server/conf');
+const path = require('path');
+const webpack = require('webpack');
+const { merge } = require('webpack-merge');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const baseWebpackConfig = require('./webpack.base.conf');
+const config = require('../config');
+const env = require('../config/prod.env');
+const server_conf = require('../server/conf');
 
-function resolve (dir) {
-  return path.join(__dirname, '..', dir)
-}
-
-var env = config.build.env
-var server_conf_vars = {}
+// 处理 server_conf.publicValues
+const server_conf_vars = {};
 function camelToSnake(str) {
   return str
     .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
     .toUpperCase();
 }
-for (let [k, v] of Object.entries(server_conf.publicValues)) {
-  server_conf_vars['process.env.' + camelToSnake(k)] = JSON.stringify(v)
+for (const [k, v] of Object.entries(server_conf.publicValues)) {
+  server_conf_vars['process.env.' + camelToSnake(k)] = JSON.stringify(v);
 }
 
-var webpackConfig = merge(baseWebpackConfig, {
-  module: {
-    rules: utils.styleLoaders({
-      sourceMap: config.build.productionSourceMap,
-      extract: true
-    })
-  },
-  devtool: config.build.productionSourceMap ? '#source-map' : false,
+const webpackConfig = merge(baseWebpackConfig, {
+  mode: 'production',
+  devtool: config.build.productionSourceMap ? 'source-map' : false,
   output: {
     path: config.build.assetsRoot,
-    filename: utils.assetsPath('js/[name].[chunkhash].js'),
-    chunkFilename: utils.assetsPath('js/[id].[chunkhash].js')
+    filename: 'js/[name].[contenthash].js',
+    chunkFilename: 'js/[id].[contenthash].js'
+  },
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          'css-loader',
+          'postcss-loader'
+        ]
+      },
+      {
+        test: /\.scss$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          'css-loader',
+          'postcss-loader',
+          'sass-loader'
+        ]
+      }
+    ]
+  },
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          compress: {
+            warnings: false
+          }
+        },
+        extractComments: false
+      }),
+      new CssMinimizerPlugin()
+    ]
   },
   plugins: [
-    // http://vuejs.github.io/vue-loader/en/workflow/production.html
     new webpack.DefinePlugin(Object.assign({
-      NODE_ENV: env.NODE_ENV,
-      GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
-      GITHUB_CLIENT_ID: env.GITHUB_CLIENT_ID
+      'process.env': env,
+      NODE_ENV: '"production"',
+      GOOGLE_CLIENT_ID: JSON.stringify(process.env.GOOGLE_CLIENT_ID || ''),
+      GITHUB_CLIENT_ID: JSON.stringify(process.env.GITHUB_CLIENT_ID || '')
     }, server_conf_vars)),
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false
-      },
-      sourceMap: true
-    }),
-    // extract css into its own file
-    new ExtractTextPlugin({
-      filename: utils.assetsPath('css/[name].[contenthash].css')
-    }),
-    // Compress extracted CSS. We are using this plugin so that possible
-    // duplicated CSS from different components can be deduped.
-    new OptimizeCSSPlugin({
-      cssProcessorOptions: {
-        safe: true
-      }
-    }),
-    // generate dist index.html with correct asset hash for caching.
-    // you can customize output by editing /index.html
-    // see https://github.com/ampedandwired/html-webpack-plugin
     new HtmlWebpackPlugin({
       filename: config.build.index,
       template: 'index.html',
@@ -76,74 +80,32 @@ var webpackConfig = merge(baseWebpackConfig, {
         removeComments: true,
         collapseWhitespace: true,
         removeAttributeQuotes: true
-        // more options:
-        // https://github.com/kangax/html-minifier#options-quick-reference
-      },
-      // necessary to consistently work with multiple chunks via CommonsChunkPlugin
-      chunksSortMode: 'dependency'
-    }),
-    // split vendor js into its own file
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor',
-      minChunks: function (module, count) {
-        // any required modules inside node_modules are extracted to vendor
-        return (
-          module.resource &&
-          /\.js$/.test(module.resource) &&
-          module.resource.indexOf(
-            path.join(__dirname, '../node_modules')
-          ) === 0
-        )
       }
     }),
-    // extract webpack runtime and module manifest to its own file in order to
-    // prevent vendor hash from being updated whenever app bundle is updated
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'manifest',
-      chunks: ['vendor']
+    new MiniCssExtractPlugin({
+      filename: 'css/[name].[contenthash].css',
+      chunkFilename: 'css/[id].[contenthash].css'
     }),
-    // copy custom static assets
-    new CopyWebpackPlugin([
-      {
-        from: path.resolve(__dirname, '../static'),
-        to: config.build.assetsSubDirectory,
-        ignore: ['.*']
-      }
-    ]),
-    new FaviconsWebpackPlugin({
-      logo: resolve('src/assets/favicon.png'),
-      title: 'StackEdit',
-    }),
-    new WebpackPwaManifest({
-      name: 'StackEdit',
-      description: 'Full-featured, open-source Markdown editor',
-      display: 'standalone',
-      orientation: 'any',
-      start_url: 'app',
-      background_color: '#ffffff',
-      crossorigin: 'use-credentials',
-      icons: [{
-        src: resolve('src/assets/favicon.png'),
-        sizes: [96, 128, 192, 256, 384, 512]
-      }]
-    }),
-    new OfflinePlugin({
-      ServiceWorker: {
-        events: true
-      },
-      AppCache: true,
-      excludes: ['**/.*', '**/*.map', '**/index.html', '**/static/oauth2/callback.html', '**/icons-*/*.png', '**/static/fonts/KaTeX_*'],
-      externals: ['/', '/app', '/oauth2/callback']
-    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, '../static'),
+          to: config.build.assetsSubDirectory,
+          globOptions: {
+            ignore: ['.*']
+          }
+        }
+      ]
+    })
   ]
-})
+});
 
 if (config.build.productionGzip) {
-  var CompressionWebpackPlugin = require('compression-webpack-plugin')
+  const CompressionWebpackPlugin = require('compression-webpack-plugin')
 
   webpackConfig.plugins.push(
     new CompressionWebpackPlugin({
-      asset: '[path].gz[query]',
+      filename: '[path][base].gz',
       algorithm: 'gzip',
       test: new RegExp(
         '\\.(' +
@@ -157,7 +119,7 @@ if (config.build.productionGzip) {
 }
 
 if (config.build.bundleAnalyzerReport) {
-  var BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+  const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
   webpackConfig.plugins.push(new BundleAnalyzerPlugin())
 }
 
