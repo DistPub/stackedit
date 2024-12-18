@@ -1,5 +1,5 @@
 {
-  "processors": ["stylelint-processor-html"],
+  "customSyntax": ["postcss-html"],
   "extends": "stylelint-config-standard",
   "rules": {
     "no-empty-source": null

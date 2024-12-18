@@ -2,12 +2,7 @@
   "presets": [
     ["@babel/preset-env", {
       "modules": false,
-      "targets": {
-        "chrome": "last 2 versions",
-        "firefox": "last 2 versions",
-        "safari": "last 2 versions",
-        "edge": "last 2 versions"
-      }
+      "targets": "last 2 Chrome versions"
     }]
   ],
   "env": {
