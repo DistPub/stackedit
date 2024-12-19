@@ -64,6 +64,7 @@ module.exports = {
         test: /\.js$/,
         loader: 'babel-loader',
         include: [
+          resolve('server/conf.js'),
           resolve('src'),
           resolve('test'),
           resolve('node_modules/mermaid')
