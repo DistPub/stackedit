@@ -109,7 +109,7 @@
     "raw-loader": "^0.5.1",
     "replace-in-file": "^4.1.0",
     "rimraf": "^2.6.0",
-    "sass": "^1.82.0",
+    "sass": "1.32.13",
     "sass-loader": "^7.0.1",
     "semver": "^5.5.0",
     "shelljs": "^0.8.1",
