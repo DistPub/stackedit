@@ -100,9 +100,9 @@ module.exports = {
     //   extensions: ['js', 'vue']
     // }),
     new VueLoaderPlugin(),
-    new StylelintPlugin({
-      extensions: ['vue', 'scss']
-    }),
+    // new StylelintPlugin({
+    //   extensions: ['vue', 'scss']
+    // }),
     new webpack.DefinePlugin({
       VERSION: JSON.stringify(require('../package.json').version)
     })

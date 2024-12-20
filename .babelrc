@@ -2,7 +2,8 @@
   "presets": [[
     "@babel/preset-env", 
     {
-      "targets": "last 2 Chrome versions"
+      "targets": "last 2 Chrome versions",
+      "modules": false
     }
   ]],
   "comments": false,
