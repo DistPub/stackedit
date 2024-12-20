@@ -25,10 +25,10 @@ exports.cssLoaders = function (options) {
     var loaders = [cssLoader]
     if (loader) {
       loaders.push({
-          loader: loader + '-loader',
-          options: Object.assign({}, loaderOptions, {
-            sourceMap: options.sourceMap
-          })
+        loader: loader + '-loader',
+        options: Object.assign({}, loaderOptions, {
+          sourceMap: options.sourceMap
+        })
       })
     }
 

@@ -37,8 +37,8 @@ module.exports = {
     rules: [
       {
         test: /\.vue$/,
-          loader: 'vue-loader',
-          options: vueLoaderConfig
+        loader: 'vue-loader',
+        options: vueLoaderConfig
       },
       // We can't pass graphlibrary to babel
       {
@@ -57,7 +57,6 @@ module.exports = {
         test: /\.js$/,
         loader: 'babel-loader',
         include: [
-          resolve('server/conf.js'),
           resolve('src'),
           resolve('test'),
           resolve('node_modules/mermaid')
@@ -91,7 +90,7 @@ module.exports = {
       },
       {
         test: /\.(md|yml|html)$/,
-        type: 'asset/resource'
+        type: 'asset/source'
       },
     ]
   },
