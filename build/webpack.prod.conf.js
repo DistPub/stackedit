@@ -102,13 +102,17 @@ var webpackConfig = merge(baseWebpackConfig, {
       }
     }),
     // copy custom static assets
-    new CopyWebpackPlugin([
-      {
-        from: path.resolve(__dirname, '../static'),
-        to: config.build.assetsSubDirectory,
-        ignore: ['.*']
-      }
-    ]),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, '../static'),
+          to: config.build.assetsSubDirectory,
+          globOptions: {
+            ignore: ['.*']
+          }
+        }
+      ]
+    }),
     new FaviconsWebpackPlugin({
       logo: resolve('src/assets/favicon.png'),
       title: 'StackEdit',
