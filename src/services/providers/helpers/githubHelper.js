@@ -64,6 +64,7 @@ export default {
    */
   async startOauth2(scopes, sub = null, silent = false) {
     const clientId = store.getters['data/serverConf'].githubClientId;
+    const clientSecret = store.getters['data/serverConf'].githubClientSecret;
 
     // Get an OAuth2 code
     const { code } = await networkSvc.startOauth2(
@@ -79,7 +80,7 @@ export default {
     let uri = new URL('https://go.smitechow.com/+x/github.com/login/oauth/access_token')
     let params = new URLSearchParams()
     params.set('client_id', clientId)
-    params.set('client_secret', 'ab13d941775e40cfadf4c0efcb5454ba14600480')
+    params.set('client_secret', clientSecret)
     params.set('code', code)
     uri.search = params.toString()
 
