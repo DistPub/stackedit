@@ -76,6 +76,9 @@ var webpackConfig = merge(baseWebpackConfig, {
     }
   },
   plugins: [
+    new webpack.ProvidePlugin({
+      process: "process/browser"
+    }),
     // http://vuejs.github.io/vue-loader/en/workflow/production.html
     new webpack.DefinePlugin(Object.assign({
       NODE_ENV: env.NODE_ENV,
