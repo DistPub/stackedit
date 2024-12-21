@@ -79,6 +79,10 @@ export default {
   background-image: url(../assets/iconBlogger.svg);
 }
 
+.icon-provider--bluesky {
+  background-image: url(../assets/iconBluesky.svg);
+}
+
 .icon-provider--zendesk {
   background-image: url(../assets/iconZendesk.svg);
 }

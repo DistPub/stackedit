@@ -57,6 +57,7 @@ import GithubPublishModal from './modals/providers/GithubPublishModal';
 import GistSyncModal from './modals/providers/GistSyncModal';
 import GistPublishModal from './modals/providers/GistPublishModal';
 import GitlabAccountModal from './modals/providers/GitlabAccountModal';
+import BlueskyAccountModal from './modals/providers/BlueskyAccountModal';
 import GitlabOpenModal from './modals/providers/GitlabOpenModal';
 import GitlabPublishModal from './modals/providers/GitlabPublishModal';
 import GitlabSaveModal from './modals/providers/GitlabSaveModal';
@@ -108,6 +109,7 @@ export default {
     GistSyncModal,
     GistPublishModal,
     GitlabAccountModal,
+    BlueskyAccountModal,
     GitlabOpenModal,
     GitlabPublishModal,
     GitlabSaveModal,

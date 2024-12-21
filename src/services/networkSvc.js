@@ -144,6 +144,37 @@ export default {
     }
     return scriptLoadingPromises[url];
   },
+  async xrpc(instance, xrpc_method, {params = {}, data = null, jwt = null}) {
+      let api = new URL(`https://${instance}/xrpc/${xrpc_method}`)
+      let searchParams = new URLSearchParams()
+      for (const [key, value] of Object.entries(params)) {
+          searchParams.set(key, value)
+      }
+      api.search = searchParams.toString()
+
+      let method = 'GET'
+      let headers = {}
+      let body = null
+
+      if (jwt !== null) {
+          headers['Authorization'] = `Bearer ${jwt}`
+      }
+
+      if (data) {
+          method = 'POST'
+          if (data instanceof File) {
+              headers['Content-Type'] = await utils.detect_file_type(data)
+              body = data
+          } else {
+              headers['Content-Type'] = 'application/json'
+              body = JSON.stringify(data)
+          }
+      }
+      let response = await fetch(api.toString(), {headers, method, body})
+      let content_type = response.headers.get('content-type')
+      if (content_type.startsWith('application/json')) return await response.json()
+      return await response.text()
+  },
   async startOauth2(url, params = {}, silent = false, reattempt = false) {
     try {
       // Build the authorize URL
