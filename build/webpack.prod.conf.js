@@ -8,7 +8,6 @@ var CopyWebpackPlugin = require('copy-webpack-plugin')
 var HtmlWebpackPlugin = require('html-webpack-plugin')
 var MiniCssExtractPlugin = require('mini-css-extract-plugin')
 var FaviconsWebpackPlugin = require('favicons-webpack-plugin')
-var server_conf = require('../server/conf');
 const TerserPlugin = require('terser-webpack-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const WorkboxPlugin = require('workbox-webpack-plugin');
@@ -18,16 +17,6 @@ function resolve (dir) {
 }
 
 var env = config.build.env
-var server_conf_vars = {}
-function camelToSnake(str) {
-  return str
-    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
-    .toUpperCase();
-}
-for (let [k, v] of Object.entries(server_conf.publicValues)) {
-  server_conf_vars['process.env.' + camelToSnake(k)] = JSON.stringify(v)
-}
-
 var webpackConfig = merge(baseWebpackConfig, {
   mode: 'production',
   module: {
@@ -84,7 +73,7 @@ var webpackConfig = merge(baseWebpackConfig, {
       NODE_ENV: env.NODE_ENV,
       GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
       GITHUB_CLIENT_ID: env.GITHUB_CLIENT_ID
-    }, server_conf_vars)),
+    }, utils.getServerPublicVars())),
     // extract css into its own file
     new MiniCssExtractPlugin({
       filename: utils.assetsPath('css/[name].[contenthash].css')
