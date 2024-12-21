@@ -18,7 +18,16 @@ var path = require('path');
 
 const compiler = Webpack(webpackConfig);
 const devServerOptions = {
-  static: webpackConfig.output.publicPath,
+  static: [
+    webpackConfig.output.publicPath,
+    {
+      directory: path.join(__dirname, '../static'),
+      publicPath: '/static',
+    },
+  ],
+  client: {
+    overlay: false,
+  },
   compress: true,
   port: port,
   open: autoOpenBrowser
