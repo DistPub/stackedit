@@ -3,11 +3,13 @@
     {
       "files": ["**/*.vue"],
       "customSyntax": "postcss-html"
+    },
+    {
+      "files": ["**/*.scss"],
+      "customSyntax": "postcss-scss"
     }
   ],
-  "extends": "stylelint-config-standard",
   "rules": {
-    "no-empty-source": null,
-    "at-rule-no-unknown": null
+    "no-empty-source": null
   }
 }

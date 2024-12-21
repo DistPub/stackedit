@@ -100,9 +100,10 @@ module.exports = {
       configType: 'flat',
       overrideConfigFile: '.eslintrc.js',
     }),
-    // new StylelintPlugin({
-    //   extensions: ['vue', 'scss']
-    // }),
+    new StylelintPlugin({
+      extensions: ['vue', 'scss'],
+      configFile: '.stylelintrc'
+    }),
     new webpack.DefinePlugin({
       VERSION: JSON.stringify(require('../package.json').version)
     })
