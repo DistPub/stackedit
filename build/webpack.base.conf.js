@@ -95,10 +95,11 @@ module.exports = {
     ]
   },
   plugins: [
-    // new ESLintPlugin({
-    //   extensions: ['js', 'vue']
-    // }),
     new VueLoaderPlugin(),
+    new ESLintPlugin({
+      configType: 'flat',
+      overrideConfigFile: '.eslintrc.js',
+    }),
     // new StylelintPlugin({
     //   extensions: ['vue', 'scss']
     // }),
