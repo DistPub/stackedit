@@ -56,11 +56,12 @@ export default new Provider({
     let blog = result.blob
 
     const tags = [...metadata.categories, ...metadata.tags].map(item => `#${item}`)
+    metadata.date = metadata.date.toISOString()
     let lines = [
-      publishLocation.title,
-      `${metadata.date.toISOString()} ${metadata.author ?? ''}`,
+      metadata.title ?? publishLocation.title,
+      `${metadata.date} ${metadata.author ?? ''}`,
       tags.join(' '),
-      metadata.excerpt ?? '',
+      metadata.excerpt ?? publishLocation.description,
     ]
     lines = lines.filter(item => item.length > 0)
     const rt = new RichText({
@@ -80,6 +81,7 @@ export default new Provider({
       thumb,
       blobs: publishLocation.blobs,
       blog,
+      meta: metadata,
     }
     let data = {
         repo: token.did,
