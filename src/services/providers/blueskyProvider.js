@@ -98,7 +98,18 @@ export default new Provider({
             }
         }
     }
-    result = await networkSvc.xrpc(token.instance, 'com.atproto.repo.putRecord', {data, jwt: token.jwt})
+    result = await networkSvc.xrpc(token.instance, 'com.atproto.repo.putRecord', { data, jwt: token.jwt })
+    const indexPost = {
+      repo: token.did,
+      "collection": "com.hukoubook.ebtp.post",
+      rkey: publishLocation.rkey,
+      "record": {
+        "$type": "com.hukoubook.ebtp.post",
+        "subject": `at://${token.did}/app.bsky.feed.post/${publishLocation.rkey}`,
+        "createdAt": new Date().toISOString()
+      }
+    }
+    await networkSvc.xrpc(token.instance, 'com.atproto.repo.putRecord', { indexPost, jwt: token.jwt })
     return {
       ...publishLocation,
     };
