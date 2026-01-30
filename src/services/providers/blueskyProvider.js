@@ -109,7 +109,7 @@ export default new Provider({
         "createdAt": new Date().toISOString()
       }
     }
-    await networkSvc.xrpc(token.instance, 'com.atproto.repo.putRecord', { indexPost, jwt: token.jwt })
+    await networkSvc.xrpc(token.instance, 'com.atproto.repo.putRecord', { data: indexPost, jwt: token.jwt })
     return {
       ...publishLocation,
     };
