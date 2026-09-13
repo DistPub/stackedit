@@ -14,6 +14,15 @@
         <icon-provider slot="icon" provider-id="googlePhotos"></icon-provider>
         <span>Add Google Photos account</span>
       </menu-entry>
+      <menu-entry @click.native="openBlueskyGallery(token)" v-for="token in blueskyTokens" :key="token.sub">
+        <icon-provider slot="icon" provider-id="bluesky"></icon-provider>
+        <div>Open from Bluesky Gallery</div>
+        <span>{{token.handle}}</span>
+      </menu-entry>
+      <menu-entry @click.native="addBlueskyAccount">
+        <icon-provider slot="icon" provider-id="bluesky"></icon-provider>
+        <span>Add Bluesky account</span>
+      </menu-entry>
     </div>
     <div class="modal__button-bar">
       <button class="button" @click="reject()">Cancel</button>
@@ -26,6 +35,7 @@
 import modalTemplate from './common/modalTemplate';
 import MenuEntry from '../menus/common/MenuEntry';
 import googleHelper from '../../services/providers/helpers/googleHelper';
+import blueskyHelper from '../../services/providers/helpers/blueskyHelper';
 import store from '../../store';
 
 export default modalTemplate({
@@ -41,6 +51,11 @@ export default modalTemplate({
       return Object.values(googleTokensBySub)
         .filter(token => token.isPhotos)
         .sort((token1, token2) => token1.name.localeCompare(token2.name));
+    },
+    blueskyTokens() {
+      const blueskyTokensBySub = store.getters['data/blueskyTokensBySub'];
+      return Object.values(blueskyTokensBySub)
+        .sort((token1, token2) => token1.handle.localeCompare(token2.handle));
     },
   },
   methods: {
@@ -63,6 +78,23 @@ export default modalTemplate({
       try {
         await googleHelper.addPhotosAccount();
       } catch (e) { /* cancel */ }
+    },
+    async addBlueskyAccount() {
+      try {
+        const { instance, handle, password } = await store.dispatch('modal/open', {
+          type: 'blueskyAccount',
+        });
+        await blueskyHelper.addAccount(instance, handle, password);
+      } catch (e) { /* cancel */ }
+    },
+    async openBlueskyGallery(token) {
+      const { callback } = this.config;
+      this.config.reject();
+      store.dispatch('modal/open', {
+        type: 'blueskyGallery',
+        token,
+        callback,
+      });
     },
     async openGooglePhotos(token) {
       const { callback } = this.config;

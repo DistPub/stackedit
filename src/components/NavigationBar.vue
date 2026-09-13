@@ -42,6 +42,7 @@
         </button>
         <div class="navigation-bar__spacer" v-else></div>
       </div>
+      <button class="navigation-bar__button button" @click="openGallery" v-title="'Open Bluesky gallery'"><icon-file-multiple></icon-file-multiple></button>
     </div>
   </nav>
 </template>
@@ -58,6 +59,7 @@ import pagedownButtons from '../data/pagedownButtons';
 import store from '../store';
 import workspaceSvc from '../services/workspaceSvc';
 import badgeSvc from '../services/badgeSvc';
+import blueskyHelper from '../services/providers/helpers/blueskyHelper';
 
 // According to mousetrap
 const mod = /Mac|iPod|iPhone|iPad/.test(navigator.platform) ? 'Meta' : 'Ctrl';
@@ -194,6 +196,31 @@ export default {
         if (text !== editorSvc.clEditor.getContent()) {
           badgeSvc.addBadge('formatButtons');
         }
+      }
+    },
+    async openGallery() {
+      const tokensBySub = store.getters['data/blueskyTokensBySub'];
+      const tokens = Object.values(tokensBySub);
+      if (tokens.length === 0) {
+        try {
+          const { instance, handle, password } = await store.dispatch('modal/open', {
+            type: 'blueskyAccount',
+          });
+          const token = await blueskyHelper.addAccount(instance, handle, password);
+          store.dispatch('modal/open', {
+            type: 'blueskyGallery',
+            token,
+          });
+        } catch (e) { /* cancel */ }
+      } else if (tokens.length === 1) {
+        store.dispatch('modal/open', {
+          type: 'blueskyGallery',
+          token: tokens[0],
+        });
+      } else {
+        store.dispatch('modal/open', {
+          type: 'blueskyGallery',
+        });
       }
     },
     async editTitle(toggle) {

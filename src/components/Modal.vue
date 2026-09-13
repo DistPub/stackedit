@@ -60,6 +60,7 @@ import BlueskyPublishModal from './modals/providers/BlueskyPublishModal';
 import GitlabAccountModal from './modals/providers/GitlabAccountModal';
 import BlueskyAccountModal from './modals/providers/BlueskyAccountModal';
 import BlueskyConfigEBTPGateModal from './modals/providers/BlueskyConfigEBTPGateModal';
+import BlueskyGalleryModal from './modals/providers/BlueskyGalleryModal';
 import GitlabOpenModal from './modals/providers/GitlabOpenModal';
 import GitlabPublishModal from './modals/providers/GitlabPublishModal';
 import GitlabSaveModal from './modals/providers/GitlabSaveModal';
@@ -112,6 +113,7 @@ export default {
     GistPublishModal,
     BlueskyPublishModal,
     BlueskyConfigEBTPGateModal,
+    BlueskyGalleryModal,
     GitlabAccountModal,
     BlueskyAccountModal,
     GitlabOpenModal,
