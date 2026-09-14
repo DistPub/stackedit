@@ -23,7 +23,8 @@
   import blueskyProvider from '../../../services/providers/blueskyProvider';
   import modalTemplate from '../common/modalTemplate';
   import badgeSvc from '../../../services/badgeSvc';
-  
+  import store from '../../../store';
+
   export default modalTemplate({
     data: () => ({
       service: '',
@@ -31,21 +32,28 @@
     computedLocalSettings: {
     },
     async created() {
-      let service = await blueskyProvider.currentEBTPGate(this.config.token)
-      if (service) this.service = service
+      try {
+        const service = await blueskyProvider.currentEBTPGate(this.config.token);
+        if (service) this.service = service;
+      } catch (err) {
+        store.dispatch('notification/error', err.message || err);
+      }
     },
     methods: {
       async resolve() {
         if (!this.service) {
           this.setError('service');
+          return;
         }
-        if (this.service) {
+        try {
           await blueskyProvider.configEBTPGate(
             this.config.token,
             this.service
           );
           badgeSvc.addBadge('configEBTPGate');
           this.config.resolve({});
+        } catch (err) {
+          store.dispatch('notification/error', err.message || err);
         }
       },
     },

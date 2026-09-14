@@ -1,4 +1,4 @@
-import networkSvc from '../../networkSvc';
+import blueskyHelper from './blueskyHelper';
 
 const GALLERY_COLLECTION = 'com.hukoubook.stackedit.gallery';
 const FATESKY_CDN_BASE_URL = 'https://fatesky-cdn.hukoubook.com/img/feed_thumbnail/plain';
@@ -16,13 +16,12 @@ export default {
    * @returns {Promise<Array<{uri: string, cid: string, value: Object}>>}
    */
   async listGallery(token) {
-    const result = await networkSvc.xrpc(token.instance, 'com.atproto.repo.listRecords', {
+    const result = await blueskyHelper.xrpcWithAuth(token, 'com.atproto.repo.listRecords', {
       params: {
         repo: token.did,
         collection: GALLERY_COLLECTION,
         limit: 100,
       },
-      jwt: token.jwt,
     });
     checkResult(result);
     return result.records || [];
@@ -35,9 +34,8 @@ export default {
    * @returns {Promise<{uri: string, cid: string, blob: Object}>}
    */
   async uploadGalleryImage(token, file) {
-    let result = await networkSvc.xrpc(token.instance, 'com.atproto.repo.uploadBlob', {
+    let result = await blueskyHelper.xrpcWithAuth(token, 'com.atproto.repo.uploadBlob', {
       data: file,
-      jwt: token.jwt,
     });
     checkResult(result);
     const blob = result.blob;
@@ -51,7 +49,7 @@ export default {
         createdAt: new Date().toISOString(),
       },
     };
-    result = await networkSvc.xrpc(token.instance, 'com.atproto.repo.createRecord', { data, jwt: token.jwt });
+    result = await blueskyHelper.xrpcWithAuth(token, 'com.atproto.repo.createRecord', { data });
     checkResult(result);
     return {
       uri: result.uri,
@@ -72,7 +70,7 @@ export default {
       collection: GALLERY_COLLECTION,
       rkey,
     };
-    const result = await networkSvc.xrpc(token.instance, 'com.atproto.repo.deleteRecord', { data, jwt: token.jwt });
+    const result = await blueskyHelper.xrpcWithAuth(token, 'com.atproto.repo.deleteRecord', { data });
     checkResult(result);
     return result;
   },

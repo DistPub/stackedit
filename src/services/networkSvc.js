@@ -129,7 +129,7 @@ export default {
     }
     return scriptLoadingPromises[url];
   },
-  async xrpc(instance, xrpc_method, {params = {}, data = null, jwt = null}) {
+  async xrpc(instance, xrpc_method, {params = {}, data = null, jwt = null, method = null}) {
       let api = new URL(`https://${instance}/xrpc/${xrpc_method}`)
       let searchParams = new URLSearchParams()
       for (const [key, value] of Object.entries(params)) {
@@ -137,7 +137,7 @@ export default {
       }
       api.search = searchParams.toString()
 
-      let method = 'GET'
+      let httpMethod = method || 'GET'
       let headers = {}
       let body = null
 
@@ -146,7 +146,7 @@ export default {
       }
 
       if (data) {
-          method = 'POST'
+          httpMethod = 'POST'
           if (data instanceof File) {
               headers['Content-Type'] = await utils.detect_file_type(data)
               body = data
@@ -155,7 +155,7 @@ export default {
               body = JSON.stringify(data)
           }
       }
-      let response = await fetch(api.toString(), {headers, method, body})
+      let response = await fetch(api.toString(), {headers, method: httpMethod, body})
       let content_type = response.headers.get('content-type')
       if (content_type.startsWith('application/json')) return await response.json()
       return await response.text()

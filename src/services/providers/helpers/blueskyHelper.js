@@ -4,6 +4,20 @@ import store from '../../../store';
 import userSvc from '../../userSvc';
 import badgeSvc from '../../badgeSvc';
 
+const AUTH_ERROR_CODES = ['AuthRequired', 'ExpiredToken', 'InvalidToken'];
+
+const isAuthError = (result) => result && typeof result === 'object'
+  && AUTH_ERROR_CODES.indexOf(result.error) !== -1;
+
+const createTokenFromSession = (instance, result) => ({
+  instance,
+  jwt: result.accessJwt,
+  refreshJwt: result.refreshJwt,
+  did: result.did,
+  handle: result.handle,
+  sub: result.did,
+});
+
 const request = ({ accessToken, serverUrl }, options) => networkSvc.request({
   ...options,
   url: `${serverUrl}/api/v4/${options.url}`,
@@ -46,35 +60,93 @@ userSvc.setInfoResolver('gitlab', subPrefix, async (sub) => {
 
 export default {
   async auth(instance, identifier, password) {
-    let data = {
-        identifier,
-        password
-    }
     const result = await networkSvc.xrpc(
       instance,
       'com.atproto.server.createSession',
-      { data }
+      { data: { identifier, password } },
     );
-    let jwt = result.accessJwt
-    let did = result.did
-    let handle = result.handle
-
-    const token = {
-      instance,
-      jwt,
-      did,
-      handle,
-      sub: did,
-    };
-
-    // Add token
+    if (result.error) {
+      throw new Error(`${result.error} ${result.message || ''}`.trim());
+    }
+    const token = createTokenFromSession(instance, result);
     store.dispatch('data/addBlueskyToken', token);
     return token;
   },
   async addAccount(instance, handle, password) {
     const token = await this.auth(instance, handle, password);
     badgeSvc.addBadge('addBlueskyAccount');
-    return token
+    return token;
+  },
+  async refreshTokenSilently(token) {
+    if (token.refreshJwt) {
+      try {
+        const result = await networkSvc.xrpc(
+          token.instance,
+          'com.atproto.server.refreshSession',
+          { jwt: token.refreshJwt, method: 'POST' },
+        );
+        if (result.accessJwt && !result.error) {
+          const updatedToken = {
+            ...token,
+            jwt: result.accessJwt,
+            refreshJwt: result.refreshJwt || token.refreshJwt,
+          };
+          store.dispatch('data/addBlueskyToken', updatedToken);
+          return updatedToken;
+        }
+      } catch (e) { /* fall through to stored-credentials re-auth */ }
+    }
+    const { blueskyInstance, blueskyHandle, blueskyPassword } = store.getters['data/localSettings'];
+    if (blueskyInstance && blueskyHandle && blueskyPassword) {
+      try {
+        const result = await networkSvc.xrpc(
+          blueskyInstance,
+          'com.atproto.server.createSession',
+          { data: { identifier: blueskyHandle, password: blueskyPassword } },
+        );
+        if (!result.error && result.did === token.sub) {
+          const freshToken = createTokenFromSession(blueskyInstance, result);
+          store.dispatch('data/addBlueskyToken', freshToken);
+          return freshToken;
+        }
+      } catch (e) { /* fall through */ }
+    }
+    return null;
+  },
+  async promptLogin() {
+    try {
+      const { instance, handle, password } = await store.dispatch('modal/open', {
+        type: 'blueskyAccount',
+      });
+      return await this.auth(instance, handle, password);
+    } catch (e) {
+      return null;
+    }
+  },
+  async xrpcWithAuth(token, method, options = {}) {
+    let result = await networkSvc.xrpc(token.instance, method, {
+      ...options,
+      jwt: token.jwt,
+    });
+    if (!isAuthError(result)) {
+      return result;
+    }
+    let freshToken = await this.refreshTokenSilently(token);
+    if (!freshToken) {
+      freshToken = await this.promptLogin();
+    }
+    if (!freshToken) {
+      throw new Error(`${result.error} ${result.message || ''}`.trim());
+    }
+    Object.assign(token, freshToken);
+    result = await networkSvc.xrpc(token.instance, method, {
+      ...options,
+      jwt: token.jwt,
+    });
+    if (isAuthError(result)) {
+      throw new Error(`${result.error} ${result.message || ''}`.trim());
+    }
+    return result;
   },
 
   /**

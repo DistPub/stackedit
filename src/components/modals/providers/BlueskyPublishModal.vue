@@ -164,7 +164,9 @@ export default modalTemplate({
     async resolve() {
       if (!this.title) {
         this.setError('title');
-      } else {
+        return;
+      }
+      try {
         const location = await blueskyProvider.makeLocation(
           this.config.token,
           this.title,
@@ -173,6 +175,8 @@ export default modalTemplate({
         );
         location.templateId = this.selectedTemplate;
         this.config.resolve(location);
+      } catch (err) {
+        store.dispatch('notification/error', err.message || err);
       }
     },
   },

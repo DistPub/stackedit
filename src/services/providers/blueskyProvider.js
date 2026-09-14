@@ -1,5 +1,6 @@
 import store from '../../store';
 import githubHelper from './helpers/githubHelper';
+import blueskyHelper from './helpers/blueskyHelper';
 import Provider from './common/Provider';
 import utils from '../utils';
 import userSvc from '../userSvc';
@@ -48,7 +49,7 @@ export default new Provider({
   async publish(token, html, metadata, publishLocation) {
     const blob = new Blob([html], { type: "text/html" });
     const file = new File([blob], `${publishLocation.title}.html`, { type: "text/html" });
-    let result = await networkSvc.xrpc(token.instance, 'com.atproto.repo.uploadBlob', {data: file, jwt: token.jwt})
+    let result = await blueskyHelper.xrpcWithAuth(token, 'com.atproto.repo.uploadBlob', {data: file})
 
     if (result.error) {
       throw Error(`${result.error} ${result.message}`);
@@ -76,7 +77,7 @@ export default new Provider({
         thumb = publishLocation.thumb
       } else {
         // A File/Blob — upload first
-        result = await networkSvc.xrpc(token.instance, 'com.atproto.repo.uploadBlob', {data: publishLocation.thumb, jwt: token.jwt})
+        result = await blueskyHelper.xrpcWithAuth(token, 'com.atproto.repo.uploadBlob', {data: publishLocation.thumb})
         thumb = result.blob
       }
     }
@@ -104,7 +105,7 @@ export default new Provider({
             }
         }
     }
-    result = await networkSvc.xrpc(token.instance, 'com.atproto.repo.putRecord', { data, jwt: token.jwt })
+    result = await blueskyHelper.xrpcWithAuth(token, 'com.atproto.repo.putRecord', { data })
     const indexPost = {
       repo: token.did,
       "collection": "com.hukoubook.ebtp.post",
@@ -115,7 +116,7 @@ export default new Provider({
         "createdAt": new Date().toISOString()
       }
     }
-    await networkSvc.xrpc(token.instance, 'com.atproto.repo.putRecord', { data: indexPost, jwt: token.jwt })
+    await blueskyHelper.xrpcWithAuth(token, 'com.atproto.repo.putRecord', { data: indexPost })
     return {
       ...publishLocation,
     };
@@ -136,7 +137,7 @@ export default new Provider({
             "createdAt": new Date().toISOString()
         }
     }
-    let result = await networkSvc.xrpc(token.instance, 'com.atproto.repo.putRecord', {data, jwt: token.jwt})
+    let result = await blueskyHelper.xrpcWithAuth(token, 'com.atproto.repo.putRecord', {data})
     if (result.error) {
       throw Error(`${result.error} ${result.message}`);
     }
