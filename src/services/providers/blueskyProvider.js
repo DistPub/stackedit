@@ -71,8 +71,14 @@ export default new Provider({
 
     let thumb = undefined
     if (publishLocation.thumb) {
-      result = await networkSvc.xrpc(token.instance, 'com.atproto.repo.uploadBlob', {data: publishLocation.thumb, jwt: token.jwt})
-      thumb = result.blob
+      if (publishLocation.thumb.ref && publishLocation.thumb.ref.$link) {
+        // Already a blob reference (picked from Bluesky gallery) — use directly
+        thumb = publishLocation.thumb
+      } else {
+        // A File/Blob — upload first
+        result = await networkSvc.xrpc(token.instance, 'com.atproto.repo.uploadBlob', {data: publishLocation.thumb, jwt: token.jwt})
+        thumb = result.blob
+      }
     }
     const external = {
       uri: publishLocation.uri,

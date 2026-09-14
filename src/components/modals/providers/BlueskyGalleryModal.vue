@@ -9,7 +9,7 @@
         Select a <b>Bluesky</b> account to open your gallery.
       </p>
       <p v-else>
-        Manage images in your <b>Bluesky</b> gallery.
+        {{ pickerMode ? 'Select an image from your' : 'Manage images in your' }} <b>Bluesky</b> gallery.
       </p>
       <div v-if="!activeToken">
         <menu-entry @click.native="addAccount">
@@ -99,13 +99,14 @@
     </div>
     <div v-if="activeToken && selectedUris.length" class="modal__button-bar">
       <button
+        v-if="!pickerMode"
         class="button gallery__danger"
         @click="deleteSelected"
       >Delete selected</button>
       <button
         class="button button--resolve"
         @click="insertSelected"
-      >Insert selected</button>
+      >{{ pickerMode ? 'Select' : 'Insert selected' }}</button>
     </div>
     <div
       v-if="previewRecord"
@@ -162,6 +163,9 @@ export default modalTemplate({
       return Object.values(blueskyTokensBySub)
         .sort((token1, token2) => token1.handle.localeCompare(token2.handle));
     },
+    pickerMode() {
+      return !!this.config.pickerMode;
+    },
   },
   async created() {
     if (this.config.token) {
@@ -215,6 +219,10 @@ export default modalTemplate({
       return this.selectedUris.indexOf(record.uri) !== -1;
     },
     toggleSelect(record) {
+      if (this.pickerMode) {
+        this.selectedUris = this.selectedUris.indexOf(record.uri) !== -1 ? [] : [record.uri];
+        return;
+      }
       const index = this.selectedUris.indexOf(record.uri);
       if (index === -1) {
         this.selectedUris.push(record.uri);
@@ -299,6 +307,19 @@ export default modalTemplate({
         return;
       }
       const selectedRecords = this.records.filter((r) => this.selectedUris.indexOf(r.uri) !== -1);
+      if (this.pickerMode) {
+        const record = selectedRecords[0];
+        const result = {
+          blob: record.value.image,
+          url: this.getImageUrl(record),
+          name: record.value.name || 'image',
+        };
+        if (this.config.onPick) {
+          this.config.onPick(result);
+        }
+        this.config.resolve(result);
+        return;
+      }
       const markdown = selectedRecords
         .map((r) => {
           const url = this.getImageUrl(r);
